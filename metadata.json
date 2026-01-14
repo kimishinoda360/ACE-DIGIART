@@ -1,0 +1,7 @@
+{
+  "name": "ACE DIGIART",
+  "description": "A premium AI-powered digital art creation and management platform featuring image generation, editing, and prompt analysis.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
