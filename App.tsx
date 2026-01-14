@@ -130,11 +130,16 @@ const App: React.FC = () => {
             </p>
           </div>
           <div className="hidden md:block">
-             <div className="flex -space-x-2">
-                {[1,2,3,4].map(i => (
-                  <img key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-zinc-900 object-cover" src={`https://picsum.photos/100/100?random=${i}`} alt="user" />
-                ))}
-                <div className="w-10 h-10 rounded-full border-2 border-white dark:border-zinc-900 bg-yellow-400 flex items-center justify-center text-xs font-bold text-black">+24k</div>
+             <div className="flex items-center gap-3 group cursor-default">
+                <div className={`p-3 rounded-2xl transition-all group-hover:rotate-12 ${isDarkMode ? 'bg-zinc-800 text-yellow-500' : 'bg-yellow-100 text-yellow-600'}`}>
+                   <Camera size={32} strokeWidth={2.5} />
+                </div>
+                <div className="flex flex-col leading-none">
+                  <span className="text-2xl font-black tracking-tighter uppercase">
+                    ACE <span className="text-yellow-500">DIGIART</span>
+                  </span>
+                  <span className="text-[10px] font-bold tracking-[0.2em] opacity-40 uppercase">Professional Suite</span>
+                </div>
              </div>
           </div>
         </header>
