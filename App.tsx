@@ -21,7 +21,8 @@ import { AppSection, GeneratedImage } from './types';
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState<AppSection>('imaginable');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // Default to dark mode as requested
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [collection, setCollection] = useState<GeneratedImage[]>(() => {
     const saved = localStorage.getItem('ace_digiart_collection');
     return saved ? JSON.parse(saved) : [];
