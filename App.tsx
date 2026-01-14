@@ -8,8 +8,8 @@ import {
   Edit3, 
   MessageSquare, 
   FolderHeart,
-  ChevronLeft,
-  ChevronRight,
+  Menu,
+  X,
   Settings
 } from 'lucide-react';
 import Imaginable from './components/Imaginable';
@@ -20,7 +20,7 @@ import { AppSection, GeneratedImage } from './types';
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState<AppSection>('imaginable');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [collection, setCollection] = useState<GeneratedImage[]>(() => {
     const saved = localStorage.getItem('ace_digiart_collection');
@@ -60,91 +60,120 @@ const App: React.FC = () => {
   }, []);
 
   const sections = [
-    { id: 'imaginable', label: 'Imaginable', icon: <ImageIcon size={18} /> },
-    { id: 'editable', label: 'Editable', icon: <Edit3 size={18} /> },
-    { id: 'promptable', label: 'Promptable', icon: <MessageSquare size={18} /> },
-    { id: 'collectable', label: 'Collectable', icon: <FolderHeart size={18} /> },
+    { id: 'imaginable', label: 'Imaginable', icon: <ImageIcon size={18} strokeWidth={1.5} /> },
+    { id: 'editable', label: 'Editable', icon: <Edit3 size={18} strokeWidth={1.5} /> },
+    { id: 'promptable', label: 'Promptable', icon: <MessageSquare size={18} strokeWidth={1.5} /> },
+    { id: 'collectable', label: 'Collectable', icon: <FolderHeart size={18} strokeWidth={1.5} /> },
   ];
 
+  const handleSectionSelect = (id: AppSection) => {
+    setActiveSection(id);
+    setIsSidebarOpen(false);
+  };
+
   return (
-    <div className={`min-h-screen flex minimal-transition ${isDarkMode ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'}`}>
-      {/* Sidebar */}
+    <div className={`min-h-screen minimal-transition ${isDarkMode ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'}`}>
+      
+      {/* Off-Canvas Backdrop */}
+      <div 
+        className={`fixed inset-0 z-[60] bg-black/20 backdrop-blur-sm transition-opacity duration-300 pointer-events-none ${
+          isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0'
+        }`}
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
+      {/* Sidebar (Off-Canvas) */}
       <aside 
-        className={`${
-          isSidebarOpen ? 'w-64' : 'w-20'
-        } fixed h-screen z-50 minimal-transition flex flex-col border-r ${
-          isDarkMode ? 'bg-zinc-950 border-zinc-900' : 'bg-white border-zinc-100'
+        className={`fixed inset-y-0 left-0 w-80 z-[70] transform minimal-transition flex flex-col border-r ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${
+          isDarkMode ? 'bg-zinc-950 border-zinc-900 shadow-2xl shadow-black' : 'bg-white border-zinc-100 shadow-xl shadow-zinc-200/50'
         }`}
       >
-        <div className="p-8 flex items-center gap-3">
-          <Camera size={22} className="text-zinc-400" />
-          {isSidebarOpen && (
-            <h1 className="text-sm font-bold tracking-[0.2em] uppercase">
+        <div className="p-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Camera size={20} className="text-zinc-400" strokeWidth={1.5} />
+            <h1 className="text-xs font-bold tracking-[0.2em] uppercase">
               ACE <span className="text-zinc-400">DIGIART</span>
             </h1>
-          )}
+          </div>
+          <button 
+            onClick={() => setIsSidebarOpen(false)}
+            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full minimal-transition text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+          >
+            <X size={20} strokeWidth={1.5} />
+          </button>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1 mt-4">
+        <nav className="flex-1 px-4 py-6 space-y-2">
           {sections.map(section => (
             <button
               key={section.id}
-              onClick={() => setActiveSection(section.id as AppSection)}
-              className={`w-full flex items-center gap-4 p-3 rounded-lg minimal-transition text-sm font-medium ${
+              onClick={() => handleSectionSelect(section.id as AppSection)}
+              className={`w-full flex items-center gap-4 p-4 rounded-xl minimal-transition text-sm font-medium ${
                 activeSection === section.id
                   ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white'
-                  : `text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200`
+                  : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
               }`}
             >
-              <span className={activeSection === section.id ? 'text-zinc-900 dark:text-zinc-100' : ''}>
-                {section.icon}
-              </span>
-              {isSidebarOpen && <span>{section.label}</span>}
+              {section.icon}
+              <span>{section.label}</span>
             </button>
           ))}
         </nav>
 
-        <div className="p-4 space-y-1">
+        <div className="p-6 border-t border-zinc-100 dark:border-zinc-900">
           <button
             onClick={toggleDarkMode}
-            className="w-full flex items-center gap-4 p-3 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-sm font-medium minimal-transition"
+            className="w-full flex items-center justify-between p-4 rounded-xl text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-sm font-medium minimal-transition"
           >
-            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            {isSidebarOpen && <span>{isDarkMode ? 'Light' : 'Dark'}</span>}
-          </button>
-          
-          <button
-            onClick={toggleSidebar}
-            className="w-full flex items-center gap-4 p-3 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-sm font-medium minimal-transition"
-          >
-            {isSidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-            {isSidebarOpen && <span>Collapse</span>}
+            <div className="flex items-center gap-4">
+              {isDarkMode ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
+              <span>Mode</span>
+            </div>
+            <span className="text-[10px] uppercase font-bold tracking-widest opacity-40">{isDarkMode ? 'Dark' : 'Light'}</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className={`flex-1 minimal-transition ${isSidebarOpen ? 'ml-64' : 'ml-20'} p-12`}>
-        <header className="flex justify-between items-start mb-16">
-          <div className="space-y-1">
-            <h2 className="text-4xl font-bold tracking-tight capitalize">{activeSection}</h2>
-            <div className="h-1 w-12 bg-zinc-900 dark:bg-zinc-100 rounded-full"></div>
+      <main className="min-h-screen p-8 lg:p-20">
+        <header className="flex justify-between items-center mb-16 max-w-7xl mx-auto">
+          {/* Top Left: Hamburger + Active Page Name */}
+          <div className="flex items-center gap-8">
+            <button 
+              onClick={toggleSidebar}
+              className="p-3 -ml-3 text-zinc-400 hover:text-zinc-900 dark:hover:text-white minimal-transition rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900"
+            >
+              <Menu size={24} strokeWidth={1.5} />
+            </button>
+            
+            <div className="flex items-center gap-4">
+              <div>
+                <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-400 leading-none mb-1">Active Space</p>
+                <h3 className="text-xl font-black tracking-tighter uppercase leading-none opacity-90">
+                  {activeSection}
+                </h3>
+              </div>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-6">
+
+          {/* Top Right: Logo Apps (Camera) + Branding */}
+          <div className="flex items-center gap-8">
             <div className="text-right hidden sm:block">
-              <p className="text-[10px] uppercase font-bold tracking-[0.25em] text-zinc-400">Official Brand</p>
-              <p className="text-lg font-black tracking-tighter uppercase leading-tight">
+              <p className="text-[9px] uppercase font-bold tracking-[0.3em] text-zinc-400 mb-0.5">Creative Suite</p>
+              <p className="text-[11px] font-black tracking-tight uppercase leading-none">
                 ACE <span className="text-zinc-400">DIGIART</span>
               </p>
             </div>
-            <div className={`w-14 h-14 rounded-full border border-zinc-200 dark:border-zinc-800 flex items-center justify-center transition-all hover:border-zinc-400 dark:hover:border-zinc-600`}>
-              <Camera size={24} className="text-zinc-500 dark:text-zinc-400" strokeWidth={1.5} />
+            <div className="w-12 h-12 rounded-full border border-zinc-100 dark:border-zinc-900 flex items-center justify-center transition-all hover:border-zinc-300 dark:hover:border-zinc-700 cursor-default">
+              <Camera size={18} className="text-zinc-500" strokeWidth={1.5} />
             </div>
           </div>
         </header>
 
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-6 duration-700">
+          {/* Large title removed to keep UI minimal as requested */}
           {activeSection === 'imaginable' && (
             <Imaginable 
               onSave={saveToCollection} 
@@ -169,6 +198,13 @@ const App: React.FC = () => {
           )}
         </div>
       </main>
+
+      {/* Floating Meta Info */}
+      <div className="fixed bottom-12 left-12 hidden xl:block">
+        <p className="text-[10px] font-black uppercase tracking-[0.6em] text-zinc-300 dark:text-zinc-800 rotate-90 origin-left">
+          STUDIO EDITION
+        </p>
+      </div>
     </div>
   );
 };
