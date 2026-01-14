@@ -41,127 +41,66 @@ const Collectable: React.FC<CollectableProps> = ({ collection, onRemove, isDarkM
   };
 
   return (
-    <div className="space-y-8">
-      {/* Search Header */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40" size={20} />
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-700">
+      <div className="flex flex-col md:flex-row gap-8 items-end justify-between border-b border-zinc-100 dark:border-zinc-900 pb-12">
+        <div className="relative w-full md:w-80 group">
+          <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-zinc-300 group-focus-within:text-zinc-900 dark:group-focus-within:text-zinc-100 minimal-transition" size={16} />
           <input 
             type="text" 
-            placeholder="Search your collection..."
+            placeholder="Filter archives..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={`w-full pl-12 pr-4 py-4 rounded-2xl focus:ring-2 focus:ring-yellow-400 outline-none transition-all ${
-              isDarkMode ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-yellow-100 shadow-sm'
-            }`}
+            className="w-full pl-8 py-2 bg-transparent text-sm focus:outline-none placeholder:text-zinc-300"
           />
         </div>
-        <p className="font-bold opacity-60">{collection.length} saved masterpieces</p>
+        <div className="text-right">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400">Total Holdings</p>
+          <p className="text-2xl font-black tracking-tight">{collection.length}</p>
+        </div>
       </div>
 
       {collection.length === 0 ? (
-        <div className="py-20 text-center opacity-40">
-          <FolderHeart size={80} className="mx-auto mb-6" />
-          <h3 className="text-2xl font-bold mb-2">No items saved yet</h3>
-          <p>Go to Imaginable or Editable to start your collection!</p>
+        <div className="py-40 text-center space-y-4 opacity-20">
+          <FolderHeart size={80} strokeWidth={0.5} className="mx-auto" />
+          <p className="text-xs font-bold uppercase tracking-[0.4em]">Vault is Empty</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((item) => (
             <div 
               key={item.id} 
-              className={`group relative rounded-3xl overflow-hidden transition-all hover:scale-[1.02] shadow-xl ${
-                isDarkMode ? 'bg-zinc-900' : 'bg-white'
-              }`}
+              className="group relative aspect-square rounded-2xl overflow-hidden border dark:border-zinc-900 minimal-transition"
             >
-              <div className="aspect-square overflow-hidden relative">
-                <img 
-                  src={item.url} 
-                  alt="saved art" 
-                  className="w-full h-full object-cover"
-                />
-                
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
-                   <div className="flex gap-2 mb-4 justify-center">
-                      <button 
-                        onClick={() => setSelectedImage(item)}
-                        className="bg-white/20 hover:bg-white/40 p-3 rounded-full text-white backdrop-blur-md"
-                        title="View Large"
-                      >
-                        <Maximize2 size={20} />
-                      </button>
-                      <button 
-                        onClick={() => downloadImage(item.url)}
-                        className="bg-white/20 hover:bg-white/40 p-3 rounded-full text-white backdrop-blur-md"
-                        title="Download"
-                      >
-                        <Download size={20} />
-                      </button>
-                      <button 
-                        onClick={() => copyPrompt(item.prompt, item.id)}
-                        className="bg-white/20 hover:bg-white/40 p-3 rounded-full text-white backdrop-blur-md"
-                        title="Copy Prompt"
-                      >
-                        {copiedId === item.id ? <Check size={20} className="text-green-400" /> : <Copy size={20} />}
-                      </button>
-                      <button 
-                        onClick={() => onRemove(item.id)}
-                        className="bg-red-500/80 hover:bg-red-500 p-3 rounded-full text-white backdrop-blur-md"
-                        title="Remove"
-                      >
-                        <Trash2 size={20} />
-                      </button>
-                   </div>
+              <img src={item.url} alt="archive" className="w-full h-full object-cover minimal-transition group-hover:scale-110" />
+              <div className="absolute inset-0 bg-zinc-950/80 opacity-0 group-hover:opacity-100 minimal-transition flex flex-col justify-center items-center gap-4 p-6">
+                <div className="flex gap-2">
+                  <button onClick={() => setSelectedImage(item)} className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md"><Maximize2 size={16}/></button>
+                  <button onClick={() => downloadImage(item.url)} className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md"><Download size={16}/></button>
+                  <button onClick={() => onRemove(item.id)} className="p-3 bg-red-500/20 hover:bg-red-500/40 rounded-full text-red-200 backdrop-blur-md"><Trash2 size={16}/></button>
                 </div>
-              </div>
-              <div className="p-4">
-                <p className="text-sm font-medium line-clamp-2 opacity-80">"{item.prompt}"</p>
-                <span className="text-[10px] uppercase font-bold tracking-widest opacity-40 mt-2 block">
-                  {new Date(item.timestamp).toLocaleDateString()}
-                </span>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mt-2">{new Date(item.timestamp).toLocaleDateString()}</p>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Large View Modal */}
       {selectedImage && (
         <div 
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-10 bg-black/95 animate-in fade-in duration-300"
+          className="fixed inset-0 z-[100] bg-zinc-950 flex items-center justify-center p-8 animate-in fade-in duration-300"
           onClick={() => setSelectedImage(null)}
         >
-          <button className="absolute top-6 right-6 text-white hover:text-yellow-400 transition-colors">
-            <X size={32} />
-          </button>
-          <div 
-            className="max-w-5xl w-full flex flex-col items-center gap-8"
-            onClick={e => e.stopPropagation()}
-          >
-            <img 
-              src={selectedImage.url} 
-              alt="large preview" 
-              className="max-w-full max-h-[70vh] rounded-3xl shadow-2xl border-4 border-yellow-400" 
-            />
-            <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl w-full text-center">
-              <h4 className="text-yellow-500 font-bold mb-4 uppercase tracking-widest text-sm">Artwork Prompt</h4>
-              <p className="text-xl md:text-2xl font-medium leading-relaxed italic">"{selectedImage.prompt}"</p>
-              <div className="flex gap-4 justify-center mt-8">
-                 <button 
-                    onClick={() => downloadImage(selectedImage.url)}
-                    className="bg-yellow-400 text-black px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-yellow-500"
-                 >
-                   <Download size={20} /> Download HD
-                 </button>
-                 <button 
-                    onClick={() => copyPrompt(selectedImage.prompt, 'modal')}
-                    className="bg-zinc-100 dark:bg-zinc-800 px-8 py-3 rounded-xl font-bold flex items-center gap-2"
-                 >
-                   {copiedId === 'modal' ? <Check size={20} className="text-green-500" /> : <Copy size={20} />}
-                   Copy Prompt
+          <button className="absolute top-8 right-8 text-zinc-500 hover:text-white minimal-transition"><X size={32} strokeWidth={1} /></button>
+          <div className="max-w-5xl w-full flex flex-col items-center gap-12" onClick={e => e.stopPropagation()}>
+            <img src={selectedImage.url} alt="large view" className="max-w-full max-h-[70vh] rounded-[2rem] shadow-2xl" />
+            <div className="text-center max-w-2xl space-y-6">
+              <div className="flex gap-4 justify-center">
+                 <button onClick={() => downloadImage(selectedImage.url)} className="bg-white text-zinc-900 px-6 py-2 rounded-full font-bold text-sm">Download RAW</button>
+                 <button onClick={() => copyPrompt(selectedImage.prompt, 'modal')} className="bg-zinc-800 text-white px-6 py-2 rounded-full font-bold text-sm">
+                   {copiedId === 'modal' ? 'Prompt Copied' : 'Copy Prompt'}
                  </button>
               </div>
+              <p className="text-lg font-medium leading-relaxed text-zinc-300 italic">"{selectedImage.prompt}"</p>
             </div>
           </div>
         </div>
