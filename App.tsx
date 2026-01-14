@@ -158,22 +158,18 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Top Right: Logo Apps (Camera) + Branding */}
+          {/* Top Right: Branding only (Camera icon removed) */}
           <div className="flex items-center gap-8">
-            <div className="text-right hidden sm:block">
+            <div className="text-right">
               <p className="text-[9px] uppercase font-bold tracking-[0.3em] text-zinc-400 mb-0.5">Creative Suite</p>
               <p className="text-[11px] font-black tracking-tight uppercase leading-none">
                 ACE <span className="text-zinc-400">DIGIART</span>
               </p>
             </div>
-            <div className="w-12 h-12 rounded-full border border-zinc-100 dark:border-zinc-900 flex items-center justify-center transition-all hover:border-zinc-300 dark:hover:border-zinc-700 cursor-default">
-              <Camera size={18} className="text-zinc-500" strokeWidth={1.5} />
-            </div>
           </div>
         </header>
 
         <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-6 duration-700">
-          {/* Large title removed to keep UI minimal as requested */}
           {activeSection === 'imaginable' && (
             <Imaginable 
               onSave={saveToCollection} 
