@@ -144,7 +144,7 @@ const Editable: React.FC<EditableProps> = ({ onSave, collection, isDarkMode }) =
               className="bg-yellow-400 hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 px-8 rounded-2xl text-black font-black text-xs uppercase tracking-tighter transition-all flex items-center gap-2 whitespace-nowrap"
             >
               {isEditing ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />}
-              Apply Edit
+              Edit Image
             </button>
           </div>
         </div>
