@@ -26,16 +26,43 @@ const Imaginable: React.FC<ImaginableProps> = ({ onSave, collection, isDarkMode 
   const [results, setResults] = useState<{url: string; prompt: string}[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files: File[] = Array.from(e.target.files || []);
-    if (refImages.length + files.length > 5) return;
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => setRefImages(prev => [...prev, reader.result as string]);
-      reader.readAsDataURL(file);
+  const processFiles = (files: File[]) => {
+    const availableSlots = 5 - refImages.length;
+    if (availableSlots <= 0) return;
+    
+    files.slice(0, availableSlots).forEach(file => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => setRefImages(prev => [...prev, reader.result as string]);
+        reader.readAsDataURL(file);
+      }
     });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Added explicit cast to File[] to resolve TypeScript 'unknown[]' error
+    const files = Array.from(e.target.files || []) as File[];
+    processFiles(files);
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const onDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    // Added explicit cast to File[] to resolve TypeScript 'unknown[]' error
+    const files = Array.from(e.dataTransfer.files) as File[];
+    processFiles(files);
   };
 
   const removeRefImage = (index: number) => setRefImages(prev => prev.filter((_, i) => i !== index));
@@ -123,8 +150,20 @@ const Imaginable: React.FC<ImaginableProps> = ({ onSave, collection, isDarkMode 
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-bold uppercase text-zinc-400">Context Images ({refImages.length}/5)</label>
+            <div 
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              className={`space-y-3 p-4 rounded-2xl border-2 border-dashed transition-all duration-300 ${
+                isDragging 
+                  ? 'border-yellow-400 bg-yellow-400/5' 
+                  : 'border-transparent'
+              }`}
+            >
+              <label className="text-[10px] font-bold uppercase text-zinc-400 flex justify-between items-center">
+                <span>Context Images ({refImages.length}/5)</span>
+                {isDragging && <span className="text-yellow-400 animate-pulse">Drop to Add</span>}
+              </label>
               <div className="flex flex-wrap gap-2">
                 {refImages.map((img, i) => (
                   <div key={i} className="relative group w-12 h-12 rounded-lg overflow-hidden border dark:border-zinc-800">
@@ -140,9 +179,11 @@ const Imaginable: React.FC<ImaginableProps> = ({ onSave, collection, isDarkMode 
                 {refImages.length < 5 && (
                   <button 
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-12 h-12 rounded-lg flex items-center justify-center border border-dashed border-zinc-200 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-zinc-100 transition-colors"
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center border border-dashed transition-all ${
+                      isDragging ? 'border-yellow-400 scale-110' : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-zinc-100'
+                    }`}
                   >
-                    <Plus size={16} className="text-zinc-300" />
+                    <Plus size={16} className={isDragging ? 'text-yellow-400' : 'text-zinc-300'} />
                   </button>
                 )}
               </div>

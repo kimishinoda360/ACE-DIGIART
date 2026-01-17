@@ -23,11 +23,11 @@ const Editable: React.FC<EditableProps> = ({ onSave, collection, isDarkMode }) =
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  const processFile = (file: File) => {
+    if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSourceImage(reader.result as string);
@@ -35,6 +35,27 @@ const Editable: React.FC<EditableProps> = ({ onSave, collection, isDarkMode }) =
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const onDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
   };
 
   const handleEdit = async () => {
@@ -59,9 +80,16 @@ const Editable: React.FC<EditableProps> = ({ onSave, collection, isDarkMode }) =
     <div className="space-y-8 animate-in slide-in-from-bottom-5 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Source Image Container */}
-        <div className={`relative aspect-square md:aspect-[4/5] rounded-[2.5rem] overflow-hidden border transition-all duration-500 ${
-          isDarkMode ? 'bg-zinc-900/40 border-zinc-900' : 'bg-zinc-100 border-zinc-200'
-        }`}>
+        <div 
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          className={`relative aspect-square md:aspect-[4/5] rounded-[2.5rem] overflow-hidden border transition-all duration-500 ${
+            isDarkMode 
+              ? `bg-zinc-900/40 border-zinc-900 ${isDragging ? 'ring-2 ring-yellow-400 bg-zinc-800' : ''}` 
+              : `bg-zinc-100 border-zinc-200 ${isDragging ? 'ring-2 ring-yellow-400 bg-zinc-50' : ''}`
+          }`}
+        >
           {sourceImage ? (
             <div className="relative group w-full h-full">
               <img 
@@ -85,10 +113,12 @@ const Editable: React.FC<EditableProps> = ({ onSave, collection, isDarkMode }) =
               <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 transition-all duration-300 ${
                 isDarkMode ? 'bg-zinc-800 group-hover:bg-zinc-700' : 'bg-white shadow-sm'
               }`}>
-                <Upload className="text-zinc-400 group-hover:text-zinc-100" size={24} />
+                <Upload className={`${isDragging ? 'text-yellow-400' : 'text-zinc-400'} group-hover:text-zinc-100`} size={24} />
               </div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 group-hover:text-zinc-300 transition-colors">
-                Upload Source
+              <p className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-colors ${
+                isDragging ? 'text-yellow-400' : 'text-zinc-500 group-hover:text-zinc-300'
+              }`}>
+                {isDragging ? 'Release to Upload' : 'Upload Source or Drop'}
               </p>
             </div>
           )}
