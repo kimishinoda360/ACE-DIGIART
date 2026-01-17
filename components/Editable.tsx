@@ -5,7 +5,8 @@ import {
   Sparkles, 
   Loader2, 
   Image as ImageIcon,
-  Edit3
+  Edit3,
+  X
 } from 'lucide-react';
 import { editImage } from '../services/geminiService';
 import { GeneratedImage } from '../types';
@@ -49,51 +50,62 @@ const Editable: React.FC<EditableProps> = ({ onSave, collection, isDarkMode }) =
     }
   };
 
+  const clearSource = () => {
+    setSourceImage(null);
+    setResultImage(null);
+  };
+
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-5 duration-500">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Source Image */}
-        <div className={`p-6 rounded-3xl border-2 border-dashed flex flex-col items-center justify-center min-h-[400px] transition-colors ${
-          isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-yellow-50/30 border-yellow-200'
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Source Image Container */}
+        <div className={`relative aspect-square md:aspect-[4/5] rounded-[2.5rem] overflow-hidden border transition-all duration-500 ${
+          isDarkMode ? 'bg-zinc-900/40 border-zinc-900' : 'bg-zinc-100 border-zinc-200'
         }`}>
           {sourceImage ? (
-            <div className="relative group w-full h-full flex items-center justify-center">
-              <img src={sourceImage} alt="source" className="max-w-full max-h-[350px] object-contain rounded-2xl shadow-xl" />
+            <div className="relative group w-full h-full">
+              <img 
+                src={sourceImage} 
+                alt="source" 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+              />
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
               <button 
-                onClick={() => setSourceImage(null)}
-                className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={clearSource}
+                className="absolute top-6 right-6 bg-zinc-950/80 text-white p-2.5 rounded-full shadow-2xl opacity-0 group-hover:opacity-100 transition-all z-10 border border-white/10 backdrop-blur-md"
               >
-                <Edit3 size={16} />
+                <X size={16} />
               </button>
             </div>
           ) : (
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="cursor-pointer text-center group"
+              className="w-full h-full flex flex-col items-center justify-center cursor-pointer group p-12 text-center"
             >
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 transition-all ${
-                isDarkMode ? 'bg-zinc-800 group-hover:bg-zinc-700' : 'bg-white group-hover:bg-yellow-100'
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 transition-all duration-300 ${
+                isDarkMode ? 'bg-zinc-800 group-hover:bg-zinc-700' : 'bg-white shadow-sm'
               }`}>
-                <Upload className="text-yellow-500" size={32} />
+                <Upload className="text-zinc-400 group-hover:text-zinc-100" size={24} />
               </div>
-              <h4 className="text-xl font-bold mb-2">Upload Source Image</h4>
-              <p className="opacity-60">The AI will modify this base image</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                Upload Source
+              </p>
             </div>
           )}
           <input type="file" ref={fileInputRef} onChange={handleUpload} className="hidden" accept="image/*" />
         </div>
 
-        {/* Result Image */}
-        <div className={`p-6 rounded-3xl min-h-[400px] flex items-center justify-center transition-colors ${
-          isDarkMode ? 'bg-zinc-900' : 'bg-zinc-50'
+        {/* Result Image Container */}
+        <div className={`relative aspect-square md:aspect-[4/5] rounded-[2.5rem] overflow-hidden border transition-all duration-500 ${
+          isDarkMode ? 'bg-zinc-900/40 border-zinc-900' : 'bg-zinc-100 border-zinc-200'
         }`}>
           {isEditing ? (
-            <div className="text-center">
-              <Loader2 className="animate-spin text-yellow-500 mx-auto mb-4" size={48} />
-              <p className="font-bold">Applying magic brush...</p>
+            <div className="w-full h-full flex flex-col items-center justify-center p-12 text-center space-y-4">
+              <Loader2 className="animate-spin text-zinc-500" size={40} />
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">Refining Canvas</p>
             </div>
           ) : resultImage ? (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full">
               <ImageCard 
                 url={resultImage} 
                 prompt={prompt} 
@@ -103,35 +115,35 @@ const Editable: React.FC<EditableProps> = ({ onSave, collection, isDarkMode }) =
               />
             </div>
           ) : (
-            <div className="text-center opacity-40">
-              <Sparkles size={64} className="mx-auto mb-4" />
-              <p className="font-medium">Modified artwork will appear here</p>
+            <div className="w-full h-full flex flex-col items-center justify-center p-12 text-center opacity-20">
+              <Sparkles size={48} strokeWidth={1} className="mb-4" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em]">Modified Preview</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Control Area */}
-      <div className={`p-6 rounded-3xl shadow-2xl space-y-4 ${
-        isDarkMode ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-yellow-100'
+      <div className={`p-4 rounded-[2rem] border shadow-2xl ${
+        isDarkMode ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-zinc-100'
       }`}>
-        <div className="space-y-2">
-          <label className="text-sm font-bold block ml-1">Edit Instructions</label>
-          <div className="flex gap-4">
+        <div className="flex flex-col gap-3">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-4">Edit Instructions</label>
+          <div className="flex gap-3">
             <input 
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="E.g., 'Change the sky to sunset', 'Add a white cat in the corner'..."
-              className={`flex-1 p-4 rounded-2xl focus:ring-2 focus:ring-yellow-400 outline-none transition-all ${
-                isDarkMode ? 'bg-zinc-800 text-white' : 'bg-zinc-100 text-black'
+              placeholder="E.g., 'Make it look like a close-up cinematic shot'..."
+              className={`flex-1 px-6 py-4 rounded-2xl outline-none text-sm font-medium transition-all ${
+                isDarkMode ? 'bg-zinc-950 text-white placeholder:text-zinc-700' : 'bg-zinc-50 text-black placeholder:text-zinc-300'
               }`}
             />
             <button 
               onClick={handleEdit}
               disabled={isEditing || !sourceImage || !prompt}
-              className="bg-yellow-400 hover:bg-yellow-500 disabled:bg-zinc-300 px-8 rounded-2xl text-black font-bold transition-all flex items-center gap-2 whitespace-nowrap"
+              className="bg-yellow-400 hover:bg-yellow-500 disabled:bg-zinc-800 disabled:text-zinc-600 px-8 rounded-2xl text-black font-black text-xs uppercase tracking-tighter transition-all flex items-center gap-2 whitespace-nowrap"
             >
-              {isEditing ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+              {isEditing ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />}
               Apply Edit
             </button>
           </div>
