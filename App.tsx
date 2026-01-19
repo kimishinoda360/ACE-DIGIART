@@ -27,8 +27,15 @@ import ControlPanel from './components/Profile/ControlPanel';
 import { AppSection, GeneratedImage, UserProfile } from './types';
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeSection, setActiveSection] = useState<AppSection>('login');
+  // Persistence for Auth
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('ace_digiart_auth') === 'true';
+  });
+  
+  const [activeSection, setActiveSection] = useState<AppSection>(() => {
+    return (localStorage.getItem('ace_digiart_auth') === 'true') ? 'imaginable' : 'login';
+  });
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
   
@@ -62,6 +69,10 @@ const App: React.FC = () => {
     localStorage.setItem('ace_digiart_user', JSON.stringify(user));
   }, [user]);
 
+  useEffect(() => {
+    localStorage.setItem('ace_digiart_auth', String(isAuthenticated));
+  }, [isAuthenticated]);
+
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
@@ -90,6 +101,7 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setActiveSection('logout');
     setIsAuthenticated(false);
+    localStorage.removeItem('ace_digiart_auth');
   };
 
   const sections = [
@@ -99,10 +111,13 @@ const App: React.FC = () => {
     { id: 'collectable', label: 'Collectable', icon: <FolderHeart size={18} strokeWidth={1.5} /> },
   ];
 
-  if (activeSection === 'login') return <Login onLogin={handleLogin} onNavigate={setActiveSection} />;
-  if (activeSection === 'register') return <Register onNavigate={setActiveSection} />;
-  if (activeSection === 'forgot') return <ForgotPassword onNavigate={setActiveSection} />;
-  if (activeSection === 'logout') return <Logout onFinish={() => setActiveSection('login')} />;
+  // Auth & Interstitial Routing
+  if (!isAuthenticated) {
+    if (activeSection === 'register') return <Register onNavigate={setActiveSection} />;
+    if (activeSection === 'forgot') return <ForgotPassword onNavigate={setActiveSection} />;
+    if (activeSection === 'logout') return <Logout onFinish={() => setActiveSection('login')} />;
+    return <Login onLogin={handleLogin} onNavigate={setActiveSection} />;
+  }
 
   return (
     <div className={`min-h-screen minimal-transition ${isDarkMode ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'}`}>

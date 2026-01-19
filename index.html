@@ -31,6 +31,34 @@
       .minimal-transition {
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       }
+
+      /* Animations */
+      @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slide-in-from-bottom {
+        from { transform: translateY(1rem); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes zoom-in {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+      }
+
+      .animate-in {
+        animation-duration: 400ms;
+        animation-fill-mode: both;
+      }
+      .fade-in { animation-name: fade-in; }
+      .slide-in-from-bottom-6 { animation-name: slide-in-from-bottom; }
+      .zoom-in-95 { animation-name: zoom-in; }
+      .animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
     </style>
     <script type="importmap">
     {
