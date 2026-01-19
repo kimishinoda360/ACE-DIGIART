@@ -10,19 +10,37 @@ import {
   FolderHeart,
   Menu,
   X,
-  Settings
+  Settings,
+  LogOut,
+  User as UserIcon,
+  Skull
 } from 'lucide-react';
 import Imaginable from './components/Imaginable';
 import Editable from './components/Editable';
 import Promptable from './components/Promptable';
 import Collectable from './components/Collectable';
-import { AppSection, GeneratedImage } from './types';
+import Login from './components/Auth/Login';
+import Register from './components/Auth/Register';
+import ForgotPassword from './components/Auth/ForgotPassword';
+import Logout from './components/Auth/Logout';
+import ControlPanel from './components/Profile/ControlPanel';
+import { AppSection, GeneratedImage, UserProfile } from './types';
 
 const App: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<AppSection>('imaginable');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [activeSection, setActiveSection] = useState<AppSection>('login');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  // Default to dark mode as requested
   const [isDarkMode, setIsDarkMode] = useState(true);
+  
+  const [user, setUser] = useState<UserProfile>(() => {
+    const saved = localStorage.getItem('ace_digiart_user');
+    return saved ? JSON.parse(saved) : {
+      username: 'kimivoltex',
+      email: 'kimi@digiart.com',
+      profilePic: null
+    };
+  });
+
   const [collection, setCollection] = useState<GeneratedImage[]>(() => {
     const saved = localStorage.getItem('ace_digiart_collection');
     return saved ? JSON.parse(saved) : [];
@@ -39,6 +57,10 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('ace_digiart_collection', JSON.stringify(collection));
   }, [collection]);
+
+  useEffect(() => {
+    localStorage.setItem('ace_digiart_user', JSON.stringify(user));
+  }, [user]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
@@ -60,6 +82,16 @@ const App: React.FC = () => {
     setCollection(prev => prev.filter(item => item.id !== id));
   }, []);
 
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    setActiveSection('imaginable');
+  };
+
+  const handleLogout = () => {
+    setActiveSection('logout');
+    setIsAuthenticated(false);
+  };
+
   const sections = [
     { id: 'imaginable', label: 'Imaginable', icon: <ImageIcon size={18} strokeWidth={1.5} /> },
     { id: 'editable', label: 'Editable', icon: <Edit3 size={18} strokeWidth={1.5} /> },
@@ -67,10 +99,10 @@ const App: React.FC = () => {
     { id: 'collectable', label: 'Collectable', icon: <FolderHeart size={18} strokeWidth={1.5} /> },
   ];
 
-  const handleSectionSelect = (id: AppSection) => {
-    setActiveSection(id);
-    setIsSidebarOpen(false);
-  };
+  if (activeSection === 'login') return <Login onLogin={handleLogin} onNavigate={setActiveSection} />;
+  if (activeSection === 'register') return <Register onNavigate={setActiveSection} />;
+  if (activeSection === 'forgot') return <ForgotPassword onNavigate={setActiveSection} />;
+  if (activeSection === 'logout') return <Logout onFinish={() => setActiveSection('login')} />;
 
   return (
     <div className={`min-h-screen minimal-transition ${isDarkMode ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'}`}>
@@ -106,14 +138,39 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2">
+        {/* User Profile Summary */}
+        <div className="px-6 mb-4">
+          <div 
+            onClick={() => { setActiveSection('control'); setIsSidebarOpen(false); }}
+            className={`p-4 rounded-2xl flex items-center gap-4 cursor-pointer transition-all ${
+              isDarkMode ? 'hover:bg-zinc-900' : 'hover:bg-zinc-50'
+            }`}
+          >
+            <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-800 border-2 border-zinc-700">
+              {user.profilePic ? (
+                <img src={user.profilePic} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-500">
+                  <UserIcon size={20} />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold truncate">{user.username}</p>
+              <p className="text-[10px] text-zinc-500 font-medium truncate uppercase tracking-tighter">{user.email}</p>
+            </div>
+            <Settings size={16} className="text-zinc-600" />
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 py-2 space-y-1">
           {sections.map(section => (
             <button
               key={section.id}
-              onClick={() => handleSectionSelect(section.id as AppSection)}
+              onClick={() => { setActiveSection(section.id as AppSection); setIsSidebarOpen(false); }}
               className={`w-full flex items-center gap-4 p-4 rounded-xl minimal-transition text-sm font-medium ${
                 activeSection === section.id
-                  ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white'
+                  ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
                   : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
               }`}
             >
@@ -121,9 +178,21 @@ const App: React.FC = () => {
               <span>{section.label}</span>
             </button>
           ))}
+          
+          <button
+            onClick={() => { setActiveSection('control'); setIsSidebarOpen(false); }}
+            className={`w-full flex items-center gap-4 p-4 rounded-xl minimal-transition text-sm font-medium ${
+              activeSection === 'control'
+                ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm'
+                : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
+            }`}
+          >
+            <Settings size={18} strokeWidth={1.5} />
+            <span>Control Panel</span>
+          </button>
         </nav>
 
-        <div className="p-6 border-t border-zinc-100 dark:border-zinc-900">
+        <div className="p-6 border-t border-zinc-100 dark:border-zinc-900 space-y-2">
           <button
             onClick={toggleDarkMode}
             className="w-full flex items-center justify-between p-4 rounded-xl text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-sm font-medium minimal-transition"
@@ -134,13 +203,19 @@ const App: React.FC = () => {
             </div>
             <span className="text-[10px] uppercase font-bold tracking-widest opacity-40">{isDarkMode ? 'Dark' : 'Light'}</span>
           </button>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-4 p-4 rounded-xl text-red-400 hover:bg-red-500/10 text-sm font-medium minimal-transition"
+          >
+            <LogOut size={18} strokeWidth={1.5} />
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="min-h-screen p-8 lg:p-20">
         <header className="flex justify-between items-center mb-16 max-w-7xl mx-auto">
-          {/* Top Left: Hamburger + Active Page Name */}
           <div className="flex items-center gap-8">
             <button 
               onClick={toggleSidebar}
@@ -153,13 +228,12 @@ const App: React.FC = () => {
               <div>
                 <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-zinc-400 leading-none mb-1">Active Space</p>
                 <h3 className="text-xl font-black tracking-tighter uppercase leading-none opacity-90">
-                  {activeSection}
+                  {activeSection === 'control' ? 'Control Panel' : activeSection}
                 </h3>
               </div>
             </div>
           </div>
 
-          {/* Top Right: Branding only (Camera icon removed) */}
           <div className="flex items-center gap-8">
             <div className="text-right">
               <p className="text-[9px] uppercase font-bold tracking-[0.3em] text-zinc-400 mb-0.5">Creative Suite</p>
@@ -172,31 +246,21 @@ const App: React.FC = () => {
 
         <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-6 duration-700">
           {activeSection === 'imaginable' && (
-            <Imaginable 
-              onSave={saveToCollection} 
-              collection={collection}
-              isDarkMode={isDarkMode} 
-            />
+            <Imaginable onSave={saveToCollection} collection={collection} isDarkMode={isDarkMode} />
           )}
           {activeSection === 'editable' && (
-            <Editable 
-              onSave={saveToCollection} 
-              collection={collection}
-              isDarkMode={isDarkMode} 
-            />
+            <Editable onSave={saveToCollection} collection={collection} isDarkMode={isDarkMode} />
           )}
           {activeSection === 'promptable' && <Promptable isDarkMode={isDarkMode} />}
           {activeSection === 'collectable' && (
-            <Collectable 
-              collection={collection} 
-              onRemove={removeFromCollection}
-              isDarkMode={isDarkMode}
-            />
+            <Collectable collection={collection} onRemove={removeFromCollection} isDarkMode={isDarkMode} />
+          )}
+          {activeSection === 'control' && (
+            <ControlPanel user={user} setUser={setUser} isDarkMode={isDarkMode} />
           )}
         </div>
       </main>
 
-      {/* Floating Meta Info */}
       <div className="fixed bottom-12 left-12 hidden xl:block">
         <p className="text-[10px] font-black uppercase tracking-[0.6em] text-zinc-300 dark:text-zinc-800 rotate-90 origin-left">
           STUDIO EDITION

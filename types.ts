@@ -1,5 +1,20 @@
 
-export type AppSection = 'imaginable' | 'editable' | 'promptable' | 'collectable';
+export type AppSection = 
+  | 'imaginable' 
+  | 'editable' 
+  | 'promptable' 
+  | 'collectable' 
+  | 'login' 
+  | 'register' 
+  | 'forgot' 
+  | 'control' 
+  | 'logout';
+
+export interface UserProfile {
+  username: string;
+  email: string;
+  profilePic: string | null;
+}
 
 export interface GeneratedImage {
   id: string;
@@ -13,7 +28,6 @@ export interface AspectRatio {
   value: string;
 }
 
-// @google/genai guidelines: gemini-2.5-flash-image supports '1:1', '3:4', '4:3', '9:16', and '16:9'
 export const ASPECT_RATIOS: AspectRatio[] = [
   { name: 'Square (1:1)', value: '1:1' },
   { name: 'Landscape (16:9)', value: '16:9' },
